@@ -1,0 +1,13 @@
+/Users/ha/Documents/Github仓库/yelp_like/yelp-api/src/main/java/com/yelp_like/api/client/CartClient.java
+/Users/ha/Documents/Github仓库/yelp_like/yelp-api/src/main/java/com/yelp_like/api/client/UserClient.java
+/Users/ha/Documents/Github仓库/yelp_like/yelp-api/src/main/java/com/yelp_like/api/client/PayClient.java
+/Users/ha/Documents/Github仓库/yelp_like/yelp-api/src/main/java/com/yelp_like/api/client/ItemClient.java
+/Users/ha/Documents/Github仓库/yelp_like/yelp-api/src/main/java/com/yelp_like/api/dto/PayOrderDTO.java
+/Users/ha/Documents/Github仓库/yelp_like/yelp-api/src/main/java/com/yelp_like/api/client/fallback/ItemClientFallbackFactory.java
+/Users/ha/Documents/Github仓库/yelp_like/yelp-api/src/main/java/com/yelp_like/api/client/fallback/PayClientFallback.java
+/Users/ha/Documents/Github仓库/yelp_like/yelp-api/src/main/java/com/yelp_like/api/dto/ItemDTO.java
+/Users/ha/Documents/Github仓库/yelp_like/yelp-api/src/main/java/com/yelp_like/api/config/DefaultFeignConfig.java
+/Users/ha/Documents/Github仓库/yelp_like/yelp-api/src/main/java/com/yelp_like/api/dto/SeckillOrderMessage.java
+/Users/ha/Documents/Github仓库/yelp_like/yelp-api/src/main/java/com/yelp_like/api/dto/SeckillPublishDTO.java
+/Users/ha/Documents/Github仓库/yelp_like/yelp-api/src/main/java/com/yelp_like/api/client/TradeClient.java
+/Users/ha/Documents/Github仓库/yelp_like/yelp-api/src/main/java/com/yelp_like/api/dto/OrderDetailDTO.java

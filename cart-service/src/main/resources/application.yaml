@@ -1,0 +1,48 @@
+server:
+  port: 8082
+  tomcat:
+    threads:
+      max: 25
+    accept-count: 25
+    max-connections: 100
+feign:
+  okhttp:
+    enabled: true
+#  sentinel:
+#    enabled: true
+yelp:
+  db:
+    database: yelp-cart
+  swagger:
+    title: "黑马商城购物车服务接口文档"
+    package: com.yelp_like.cart.controller
+spring:
+  cloud:
+    sentinel:
+      eager: true
+      http-method-specify: true
+      transport:
+        dashboard: ${SENTINEL_DASHBOARD:localhost:8719}
+        port: ${SENTINEL_TRANSPORT_PORT:8719}
+      datasource:
+        flow:
+          nacos:
+            server-addr: ${spring.cloud.nacos.server-addr:127.0.0.1:8848}
+            data-id: ${spring.application.name}-flow-rules
+            group-id: SENTINEL_GROUP
+            data-type: json
+            rule-type: flow
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}

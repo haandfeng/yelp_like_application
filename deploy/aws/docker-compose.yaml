@@ -1,0 +1,149 @@
+version: "3.8"
+
+x-aws-logs: &awslogs
+  driver: awslogs
+  options:
+    awslogs-region: ${AWS_REGION:-us-east-1}
+    awslogs-group: ${AWS_LOG_GROUP:-/aws/ecs/yelp-like}
+
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-123}
+      MYSQL_DATABASE: yelp_like
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging: *awslogs
+
+  redis:
+    image: redis:6.2
+    command: ["redis-server", "--appendonly", "yes"]
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    logging: *awslogs
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: yelp_like
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-123}
+      RABBITMQ_DEFAULT_VHOST: /yelp_like
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    logging: *awslogs
+
+  nacos:
+    image: nacos/nacos-server:v2.2.1
+    restart: unless-stopped
+    environment:
+      MODE: standalone
+      SPRING_DATASOURCE_PLATFORM: mysql
+      MYSQL_SERVICE_HOST: mysql
+      MYSQL_SERVICE_DB_NAME: yelp_like
+      MYSQL_SERVICE_USER: root
+      MYSQL_SERVICE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-123}
+    ports:
+      - "8848:8848"
+    depends_on:
+      - mysql
+    logging: *awslogs
+
+  sentinel-dashboard:
+    image: bladex/sentinel-dashboard:1.8.6
+    restart: unless-stopped
+    environment:
+      - AUTH_USERNAME=${SENTINEL_USER:-sentinel}
+      - AUTH_PASSWORD=${SENTINEL_PASS:-sentinel}
+    ports:
+      - "8719:8719"
+    logging: *awslogs
+
+  yelp-service:
+    build:
+      context: ../..
+      dockerfile: yelp-service/Dockerfile
+    image: ${ECR_URI:-yelp-like/yelp-service}:latest
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/yelp_like?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-123}
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_USERNAME: yelp_like
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-123}
+      SPRING_CLOUD_NACOS_SERVER_ADDR: nacos:8848
+      SENTINEL_DASHBOARD: sentinel-dashboard:8719
+      ES_URIS: http://elasticsearch:9200
+    depends_on:
+      - mysql
+      - redis
+      - rabbitmq
+      - nacos
+    ports:
+      - "8080:8080"
+    logging: *awslogs
+
+  elasticsearch:
+    image: elasticsearch:7.17.13
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    logging: *awslogs
+
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+    logging: *awslogs
+
+  grafana:
+    image: grafana/grafana:10.4.3
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin123}
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    logging: *awslogs
+
+volumes:
+  mysql-data:
+  redis-data:
+  rabbitmq-data:
+  es-data:
+  grafana-data:
+

@@ -1,0 +1,5 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.yelp_like.common.config.MyBatisConfig,\
+  com.yelp_like.common.config.MvcConfig,\
+  com.yelp_like.common.config.MqConfig,\
+  com.yelp_like.common.config.JsonConfig

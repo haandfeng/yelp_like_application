@@ -1,0 +1,43 @@
+server:
+  port: 8085
+yelp:
+  db:
+    database: yelp-trade
+  swagger:
+    title: "黑马商城交易服务接口文档"
+    package: com.yelp_like.trade.controller
+spring:
+  rabbitmq:
+    host: 192.168.150.101
+    port: 5672
+    virtual-host: /yelp_like
+    username: yelp_like
+    password: 123
+  cloud:
+    sentinel:
+      eager: true
+      transport:
+        dashboard: ${SENTINEL_DASHBOARD:localhost:8719}
+        port: ${SENTINEL_TRANSPORT_PORT:8719}
+      datasource:
+        flow:
+          nacos:
+            server-addr: ${spring.cloud.nacos.server-addr:127.0.0.1:8848}
+            data-id: ${spring.application.name}-flow-rules
+            group-id: SENTINEL_GROUP
+            data-type: json
+            rule-type: flow
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
